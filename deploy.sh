@@ -1,161 +1,201 @@
 #!/bin/bash
+# Safe deployment script for multi-site server
+# This ONLY sets up hvac.bushleague.xyz without touching existing sites
 
-# HVAC AI Secretary - Deployment Script
-# This script automates the deployment of the HVAC AI Secretary application
+set -e  # Exit on any error
 
-set -e  # Exit on error
+echo "========================================="
+echo "HVAC AI Secretary - Safe Deployment"
+echo "Domain: hvac.bushleague.xyz"
+echo "========================================="
 
-echo "=================================="
-echo "HVAC AI Secretary Deployment"
-echo "=================================="
+# Configuration
+DOMAIN="hvac.bushleague.xyz"
+APP_DIR="/var/www/hvac-ai-secretary"
+APP_PORT=3001
+DB_NAME="hvac_crm"
+DB_USER="hvac_user"
+DB_PASS=$(openssl rand -base64 32)
 
-# Colors for output
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-
-# Check if running as root
-if [ "$EUID" -ne 0 ]; then 
-   echo -e "${RED}Please run as root (use sudo)${NC}"
-   exit 1
-fi
-
-# Get the non-root user who invoked sudo
-ACTUAL_USER=${SUDO_USER:-$USER}
-DEPLOY_DIR="/home/$ACTUAL_USER/hvac-ai-secretary"
-
-echo -e "${YELLOW}Deployment directory: $DEPLOY_DIR${NC}"
-
-# Update system packages
-echo -e "${GREEN}[1/9] Updating system packages...${NC}"
-apt-get update -y
-apt-get upgrade -y
-
-# Install Node.js 18
-echo -e "${GREEN}[2/9] Installing Node.js 18...${NC}"
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-apt-get install -y nodejs
-
-# Install PostgreSQL
-echo -e "${GREEN}[3/9] Installing PostgreSQL...${NC}"
-apt-get install -y postgresql postgresql-contrib
-
-# Install Nginx
-echo -e "${GREEN}[4/9] Installing Nginx...${NC}"
-apt-get install -y nginx
-
-# Install PM2 globally
-echo -e "${GREEN}[5/9] Installing PM2...${NC}"
-npm install -g pm2
-
-# Clone or update repository
-echo -e "${GREEN}[6/9] Setting up application...${NC}"
-if [ -d "$DEPLOY_DIR" ]; then
-    echo "Directory exists, pulling latest changes..."
-    cd "$DEPLOY_DIR"
-    sudo -u $ACTUAL_USER git pull
+echo "Step 1: Installing dependencies (if not present)..."
+# Check what's already installed
+if ! command -v node &> /dev/null; then
+    echo "Installing Node.js..."
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    sudo apt install -y nodejs
 else
-    echo "Cloning repository..."
-    sudo -u $ACTUAL_USER git clone https://github.com/dutchiono/hvac-ai-secretary.git "$DEPLOY_DIR"
-    cd "$DEPLOY_DIR"
+    echo "Node.js already installed: $(node --version)"
 fi
 
-# Install dependencies
-echo -e "${GREEN}[7/9] Installing Node.js dependencies...${NC}"
-sudo -u $ACTUAL_USER npm install
+if ! command -v psql &> /dev/null; then
+    echo "Installing PostgreSQL..."
+    sudo apt install -y postgresql postgresql-contrib
+else
+    echo "PostgreSQL already installed"
+fi
 
-# Setup PostgreSQL database
-echo -e "${GREEN}[8/9] Setting up PostgreSQL database...${NC}"
-read -p "Enter database password for hvacuser: " DB_PASSWORD
+if ! command -v pm2 &> /dev/null; then
+    echo "Installing PM2..."
+    sudo npm install -g pm2
+else
+    echo "PM2 already installed"
+fi
 
-sudo -u postgres psql << EOF
-CREATE DATABASE hvac_crm;
-CREATE USER hvacuser WITH ENCRYPTED PASSWORD '$DB_PASSWORD';
-GRANT ALL PRIVILEGES ON DATABASE hvac_crm TO hvacuser;
-\\q
+if ! command -v certbot &> /dev/null; then
+    echo "Installing Certbot for SSL..."
+    sudo apt install -y certbot python3-certbot-nginx
+else
+    echo "Certbot already installed"
+fi
+
+echo ""
+echo "Step 2: Creating application directory..."
+sudo mkdir -p $APP_DIR
+sudo chown -R $USER:$USER $APP_DIR
+
+echo ""
+echo "Step 3: Cloning repository..."
+cd $APP_DIR
+if [ -d ".git" ]; then
+    echo "Repository exists, pulling latest..."
+    git pull
+else
+    git clone https://github.com/dutchiono/hvac-ai-secretary.git .
+fi
+
+echo ""
+echo "Step 4: Installing npm packages..."
+npm install
+
+echo ""
+echo "Step 5: Setting up PostgreSQL database..."
+sudo -u postgres psql <<EOF
+-- Create database and user (will skip if exists)
+SELECT 'CREATE DATABASE $DB_NAME' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB_NAME')\gexec
+DO \$\$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_user WHERE usename = '$DB_USER') THEN
+    CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';
+  END IF;
+END
+\$\$;
+GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 EOF
 
-echo "Importing database schema..."
-sudo -u postgres psql -d hvac_crm -f "$DEPLOY_DIR/hvac-crm-schema.sql"
+echo ""
+echo "Step 6: Running database schema..."
+sudo -u postgres psql -d $DB_NAME -f hvac-crm-schema.sql || echo "Schema already exists or error (continuing...)"
 
-# Create .env file if it doesn't exist
-if [ ! -f "$DEPLOY_DIR/.env" ]; then
-    echo -e "${YELLOW}Creating .env file...${NC}"
-    cp "$DEPLOY_DIR/.env.example" "$DEPLOY_DIR/.env"
-    
-    # Update database password in .env
-    sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" "$DEPLOY_DIR/.env"
-    
-    echo -e "${RED}IMPORTANT: Edit $DEPLOY_DIR/.env with your Twilio and business information${NC}"
-fi
+echo ""
+echo "Step 7: Creating .env file..."
+cat > .env <<EOF
+# Server Configuration
+PORT=$APP_PORT
+NODE_ENV=production
+DATABASE_URL=postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME
 
-# Setup Nginx
-echo -e "${GREEN}[9/9] Configuring Nginx...${NC}"
-read -p "Enter your domain name (e.g., hvac.example.com): " DOMAIN_NAME
+# Twilio (you'll need to add these)
+TWILIO_ACCOUNT_SID=your_account_sid_here
+TWILIO_AUTH_TOKEN=your_auth_token_here
+TWILIO_PHONE_NUMBER=your_twilio_phone_here
 
-cat > /etc/nginx/sites-available/hvac-ai-secretary << EOF
+# OpenAI (you'll need to add this)
+OPENAI_API_KEY=your_openai_key_here
+
+# Business Settings
+BUSINESS_NAME=Your HVAC Company
+BUSINESS_PHONE=+1234567890
+BUSINESS_ADDRESS=123 Main St, City, ST 12345
+EOF
+
+echo ""
+echo "Step 8: Creating Nginx site config (SAFE - only adds new site)..."
+sudo tee /etc/nginx/sites-available/hvac.bushleague.xyz > /dev/null <<'EOF'
 server {
     listen 80;
-    server_name $DOMAIN_NAME;
+    server_name hvac.bushleague.xyz;
 
-    location / {
+    # API proxy
+    location /api {
         proxy_pass http://localhost:3001;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_cache_bypass \$http_upgrade;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Static files (chat widget, etc)
+    location / {
+        root /var/www/hvac-ai-secretary/public;
+        try_files $uri $uri/ @backend;
+    }
+
+    # Fallback to Node.js for non-static routes
+    location @backend {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
     }
 }
 EOF
 
-# Enable site
-ln -sf /etc/nginx/sites-available/hvac-ai-secretary /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
+echo ""
+echo "Step 9: Enabling site and testing Nginx config..."
+sudo ln -sf /etc/nginx/sites-available/hvac.bushleague.xyz /etc/nginx/sites-enabled/
+sudo nginx -t
 
-# Test nginx configuration
-nginx -t
-
-# Reload nginx
-systemctl reload nginx
-systemctl enable nginx
-
-# Start application with PM2
-echo -e "${GREEN}Starting application with PM2...${NC}"
-cd "$DEPLOY_DIR"
-sudo -u $ACTUAL_USER pm2 delete hvac-ai-secretary 2>/dev/null || true
-sudo -u $ACTUAL_USER pm2 start server.js --name hvac-ai-secretary
-sudo -u $ACTUAL_USER pm2 save
-sudo -u $ACTUAL_USER pm2 startup systemd -u $ACTUAL_USER --hp /home/$ACTUAL_USER
-
-# Setup firewall
-echo -e "${GREEN}Configuring firewall...${NC}"
-ufw allow 22
-ufw allow 80
-ufw allow 443
-echo "y" | ufw enable
+if [ $? -eq 0 ]; then
+    echo "Nginx config is valid!"
+    sudo systemctl reload nginx
+else
+    echo "ERROR: Nginx config test failed. Not reloading."
+    exit 1
+fi
 
 echo ""
-echo -e "${GREEN}=================================="
-echo "Deployment Complete!"
-echo "==================================${NC}"
+echo "Step 10: Creating public directory for static files..."
+mkdir -p $APP_DIR/public
+cp chat-widget.html $APP_DIR/public/index.html
+
 echo ""
-echo "Next steps:"
-echo "1. Edit .env file: nano $DEPLOY_DIR/.env"
-echo "2. Add your Twilio credentials"
-echo "3. Restart the app: pm2 restart hvac-ai-secretary"
-echo "4. Setup SSL with certbot:"
-echo "   sudo apt install certbot python3-certbot-nginx -y"
-echo "   sudo certbot --nginx -d $DOMAIN_NAME"
+echo "Step 11: Starting application with PM2..."
+pm2 delete hvac-ai-secretary 2>/dev/null || true
+pm2 start server.js --name hvac-ai-secretary
+pm2 save
+pm2 startup | tail -n 1 | sudo bash
+
 echo ""
-echo "Your app is running at: http://$DOMAIN_NAME"
+echo "========================================="
+echo "✓ Deployment Complete!"
+echo "========================================="
+echo ""
+echo "IMPORTANT - Next Steps:"
+echo ""
+echo "1. DNS: Point hvac.bushleague.xyz to this server's IP"
+echo "   A record: hvac.bushleague.xyz -> YOUR_SERVER_IP"
+echo ""
+echo "2. SSL Certificate (run after DNS propagates):"
+echo "   sudo certbot --nginx -d hvac.bushleague.xyz"
+echo ""
+echo "3. Edit .env file with your API keys:"
+echo "   nano $APP_DIR/.env"
+echo "   Then restart: pm2 restart hvac-ai-secretary"
+echo ""
+echo "4. Database password (save this):"
+echo "   $DB_PASS"
+echo ""
+echo "App running on: http://localhost:$APP_PORT"
+echo "Public URL (after DNS): http://hvac.bushleague.xyz"
 echo ""
 echo "Useful commands:"
-echo "  pm2 status                  - Check app status"
-echo "  pm2 logs hvac-ai-secretary  - View logs"
-echo "  pm2 restart hvac-ai-secretary - Restart app"
-echo ""
+echo "  pm2 logs hvac-ai-secretary    # View logs"
+echo "  pm2 restart hvac-ai-secretary # Restart app"
+echo "  pm2 status                    # Check status"
+echo "========================================="
