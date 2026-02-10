@@ -107,108 +107,55 @@ async function sendMessage() {
     try {
         const response = await fetch('/api/chat', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message })
         });
 
         const data = await response.json();
-        
         hideTypingIndicator();
-        
-        if (data.response) {
-            addMessage(data.response, false);
-        } else if (data.error) {
-            addMessage('Sorry, I encountered an error. Please try again or call us at (555) HVAC-NOW for immediate assistance.', false);
-            console.error('API Error:', data.error);
+
+        if (response.ok) {
+            addMessage(data.reply, false);
+        } else {
+            addMessage('Sorry, I encountered an error. Please try again or call us at 412-512-0425.', false);
         }
     } catch (error) {
+        console.error('Chat error:', error);
         hideTypingIndicator();
-        addMessage('Sorry, I couldn\'t connect to the server. Please try again or call us at (555) HVAC-NOW for immediate assistance.', false);
-        console.error('Fetch error:', error);
+        addMessage('Sorry, I encountered a connection error. Please try again or call us at 412-512-0425.', false);
     } finally {
         sendButton.disabled = false;
-        userInput.focus();
     }
 }
 
-// Send Quick Message
-function sendQuickMessage(text) {
-    userInput.value = text;
-    sendMessage();
+// Submit Contact Form
+async function submitContactForm(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // TODO: Send to server
+    console.log('Contact form submitted:', {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        service: formData.get('service'),
+        message: formData.get('message')
+    });
+    
+    alert('Thank you for your message! We will get back to you soon.');
+    form.reset();
 }
 
-// Handle Enter Key
-function handleKeyPress(event) {
-    if (event.key === 'Enter' && !sendButton.disabled) {
+// Event Listeners
+chatBubble.addEventListener('click', toggleChat);
+sendButton.addEventListener('click', sendMessage);
+userInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
         sendMessage();
     }
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    // Add smooth scroll for all anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    });
-
-    // Add animation on scroll for service cards
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-
-    // Observe service cards and pricing cards
-    document.querySelectorAll('.service-card, .pricing-card').forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(card);
-    });
-
-    // Close chat when clicking outside
-    document.addEventListener('click', function(event) {
-        if (chatOpen && 
-            !chatWindow.contains(event.target) && 
-            !chatBubble.contains(event.target)) {
-            toggleChat();
-        }
-    });
-
-    // Prevent chat window clicks from closing it
-    chatWindow.addEventListener('click', function(event) {
-        event.stopPropagation();
-    });
 });
 
-// Navbar scroll effect
-let lastScroll = 0;
-const navbar = document.querySelector('.navbar');
-
-window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    
-    if (currentScroll > lastScroll && currentScroll > 100) {
-        navbar.style.transform = 'translateY(-100%)';
-    } else {
-        navbar.style.transform = 'translateY(0)';
-    }
-    
-    lastScroll = currentScroll;
-});
+// Close Chat Button
+document.querySelector('.close-chat')?.addEventListener('click', toggleChat);
