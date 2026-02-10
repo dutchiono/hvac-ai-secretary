@@ -41,6 +41,11 @@ jobs:
             echo "Installing dependencies..."
             npm install --omit=dev
 
+            echo "Creating .env file with secrets..."
+            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
+            echo "PORT=3145" >> .env
+            echo "NODE_ENV=production" >> .env
+
             echo "Restarting service..."
             sudo systemctl restart hvac-ai-secretary
 
