@@ -8,7 +8,13 @@
     "dev": "nodemon server.js",
     "db:setup": "psql -U postgres -f hvac-crm-schema.sql"
   },
-  "keywords": ["hvac", "ai", "chatbot", "sms", "crm"],
+  "keywords": [
+    "hvac",
+    "ai",
+    "chatbot",
+    "sms",
+    "crm"
+  ],
   "author": "Dutch Iono",
   "license": "MIT",
   "dependencies": {
@@ -20,7 +26,8 @@
     "body-parser": "^1.20.2",
     "helmet": "^7.1.0",
     "compression": "^1.7.4",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "react-calendar": "^4.8.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
