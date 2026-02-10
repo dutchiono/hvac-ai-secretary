@@ -1,10 +1,17 @@
 // SMS Utility Functions
 const twilio = require('twilio');
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+let client = null;
+function getClient() {
+  if (!client) {
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+      console.warn('Twilio credentials not configured - SMS disabled');
+      return null;
+    }
+    client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  }
+  return client;
+}
 
 // SMS Templates
 const templates = {
@@ -38,7 +45,9 @@ async function sendSMS(to, templateName, data) {
   try {
     const message = templates[templateName](data);
     
-    const result = await client.messages.create({
+    const twilioClient = getClient();
+    if (!twilioClient) return { success: false, error: 'Twilio not configured' };
+    const result = await twilioClient.messages.create({
       body: message,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: to
