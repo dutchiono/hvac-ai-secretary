@@ -23,13 +23,11 @@ jobs:
           script: |
             set -e
             
-            # Define paths
             APP_DIR="/var/www/hvac-ai-secretary"
             REPO_URL="https://github.com/dutchiono/hvac-ai-secretary.git"
             
             echo "🚀 Starting deployment..."
             
-            # Initial deployment or update
             if [ -d "$APP_DIR" ]; then
               echo "📦 Updating existing application..."
               cd $APP_DIR
@@ -42,44 +40,36 @@ jobs:
               cd $APP_DIR
             fi
             
-            # Install/update dependencies
             echo "📥 Installing dependencies..."
             npm install --production
             
-            # Set up Nginx (only if not already configured)
             if [ ! -f "/etc/nginx/sites-available/hvac.bushleague.xyz" ]; then
               echo "🌐 Setting up Nginx..."
               sudo apt-get update && sudo apt-get install -y nginx
-              sudo bash -c 'cat > /etc/nginx/sites-available/hvac.bushleague.xyz << '\''EOF'\'''
+              sudo tee /etc/nginx/sites-available/hvac.bushleague.xyz > /dev/null <<EOF
             server {
                 listen 80;
                 server_name hvac.bushleague.xyz;
-
                 location / {
                     proxy_pass http://localhost:3145;
                     proxy_http_version 1.1;
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection '\''upgrade'\'';
-                    proxy_set_header Host $host;
-                    proxy_cache_bypass $http_upgrade;
-                    proxy_set_header X-Real-IP $remote_addr;
-                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host \$host;
+                    proxy_cache_bypass \$http_upgrade;
                 }
             }
-            EOF'
+            EOF
               sudo ln -sf /etc/nginx/sites-available/hvac.bushleague.xyz /etc/nginx/sites-enabled/
               sudo nginx -t && sudo systemctl reload nginx
             fi
             
-            # Set up systemd service (only if not already configured)
             if [ ! -f "/etc/systemd/system/hvac-chatbot.service" ]; then
               echo "⚙️ Setting up systemd service..."
-              sudo bash -c 'cat > /etc/systemd/system/hvac-chatbot.service << '\''EOF'\'''
+              sudo tee /etc/systemd/system/hvac-chatbot.service > /dev/null <<EOF
             [Unit]
             Description=HVAC AI Chatbot Service
             After=network.target
-
             [Service]
             Type=simple
             User=www-data
@@ -87,52 +77,22 @@ jobs:
             ExecStart=/usr/bin/node server.js
             Restart=always
             RestartSec=10
-            StandardOutput=syslog
-            StandardError=syslog
-            SyslogIdentifier=hvac-chatbot
             Environment=NODE_ENV=production
             Environment=PORT=3145
-
             [Install]
             WantedBy=multi-user.target
-            EOF'
+            EOF
               sudo systemctl daemon-reload
               sudo systemctl enable hvac-chatbot
             fi
             
-            # Set up environment file (only if not exists)
-            if [ ! -f "$APP_DIR/.env" ]; then
-              echo "📝 Creating .env file..."
-              cat > $APP_DIR/.env << 'EOF'
-            PORT=3145
-            NODE_ENV=production
-            TWILIO_ACCOUNT_SID=your_twilio_account_sid_here
-            TWILIO_AUTH_TOKEN=your_twilio_auth_token_here
-            TWILIO_PHONE_NUMBER=your_twilio_phone_number_here
-            GROQ_API_KEY=your_groq_api_key_here
-            EOF
-              echo "⚠️ REMINDER: Add API keys to $APP_DIR/.env"
-            fi
+            touch $APP_DIR/.env
             
-            # Set permissions
             echo "🔒 Setting permissions..."
             sudo chown -R www-data:www-data $APP_DIR
             
-            # Restart service
             echo "🔄 Restarting service..."
             sudo systemctl restart hvac-chatbot
             
-            # Set up SSL (only if certificate doesn't exist)
-            if [ ! -f "/etc/letsencrypt/live/hvac.bushleague.xyz/fullchain.pem" ]; then
-              echo "🔐 Setting up SSL with Certbot..."
-              sudo apt-get install -y certbot python3-certbot-nginx
-              sudo certbot --nginx -d hvac.bushleague.xyz --non-interactive --agree-tos --email dutchiono@gmail.com || echo "⚠️ Certbot failed, continuing without SSL"
-            fi
-            
-            # Show status
             echo "✅ Deployment complete!"
             sudo systemctl status hvac-chatbot --no-pager
-            
-            echo ""
-            echo "🌐 Site: https://hvac.bushleague.xyz"
-            echo "📋 Logs: journalctl -u hvac-chatbot -f"
