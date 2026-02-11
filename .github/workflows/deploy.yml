@@ -24,13 +24,14 @@ jobs:
             set -e
 
             APP_DIR="/var/www/hvac-ai-secretary"
-            REPO_URL="https://github.com/dutchiono/hvac-ai-secretary.git"
+            REPO_URL="https://github.com/ionoi-inc/hvac-ai-secretary.git"
 
             echo "Starting deployment..."
 
             if [ -d "$APP_DIR/.git" ]; then
-              echo "Pulling latest changes..."
+              echo "Updating remote to org repo..."
               cd $APP_DIR
+              git remote set-url origin $REPO_URL
               git fetch origin main
               git reset --hard origin/main
             else
@@ -42,10 +43,12 @@ jobs:
             echo "Installing dependencies..."
             npm install --omit=dev
 
-            echo "Creating .env file with secrets..."
-            echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
-            echo "PORT=3145" >> .env
-            echo "NODE_ENV=production" >> .env
+            echo "Preserving .env — creating only if missing..."
+            if [ ! -f .env ]; then
+              echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
+              echo "PORT=3145" >> .env
+              echo "NODE_ENV=production" >> .env
+            fi
 
             echo "Restarting service..."
             sudo systemctl restart hvac-ai-secretary
