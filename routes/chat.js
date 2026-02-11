@@ -6,9 +6,10 @@ const { sendSMS } = require('../utils/sms');
 const OpenAI = require('openai');
 const axios = require('axios');
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+}
 
 // System prompt with real M. Jacob Company information
 const SYSTEM_PROMPT = `You are the AI assistant for M. Jacob Company, a local, family-owned heating and air conditioning business serving the greater Pittsburgh area.
@@ -136,6 +137,9 @@ async function queryAvailability(startDate, endDate) {
 // Send chat message
 router.post('/message', async (req, res) => {
   try {
+    if (!openai) {
+      return res.json({ success: true, response: 'Chat is not configured yet. Please set up the OPENAI_API_KEY environment variable.' });
+    }
     const { sessionId, message, sender } = req.body;
 
     // Save message to database
