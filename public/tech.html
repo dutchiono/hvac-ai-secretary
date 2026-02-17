@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technician Portal - HVAC CRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.3rem;
+        }
+
+        .tech-info {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .login-screen {
+            max-width: 400px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .login-screen h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .main-content {
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .date-selector {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .date-selector label {
+            font-weight: 600;
+        }
+
+        .date-selector input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .jobs-summary {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .jobs-summary h2 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .jobs-summary .count {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .job-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .job-card.in_progress {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .job-card.scheduled {
+            border-left-color: #3498db;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .job-number {
+            font-size: 0.85rem;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .job-time {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .customer-info {
+            margin-bottom: 1rem;
+        }
+
+        .customer-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-type {
+            color: #3498db;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+            color: #666;
+        }
+
+        .detail-row a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .issue-box {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            border-left: 3px solid #f39c12;
+        }
+
+        .issue-box strong {
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .equipment-info {
+            background: #ecf0f1;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .job-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .job-actions button {
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .notes-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .notes-section textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .completion-form {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        .completion-form h4 {
+            margin-bottom: 0.75rem;
+            color: #2c3e50;
+        }
+
+        .completion-form textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            min-height: 60px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid white;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 600px) {
+            .job-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <h2>🔧 Technician Login</h2>
+        <div id="loginError" style="display: none;" class="error"></div>
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="loginPhone">Phone Number</label>
+                <input type="tel" id="loginPhone" placeholder="555-123-4567" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+
+    <!-- Main App (hidden until login) -->
+    <div id="mainApp" style="display: none;">
+        <div class="header">
+            <div class="header-content">
+                <div>
+                    <h1>🔧 My Jobs</h1>
+                    <div class="tech-info" id="techName">-</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="date-selector">
+                <label for="jobDate">📅 Date:</label>
+                <input type="date" id="jobDate">
+            </div>
+
+            <div class="jobs-summary">
+                <h2>Today's Jobs</h2>
+                <div class="count" id="jobCount">0</div>
+            </div>
+
+            <div id="jobsList">
+                <div class="loading">Loading jobs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let currentTech = null;
+
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTech = localStorage.getItem('tech');
+            if (savedTech) {
+                currentTech = JSON.parse(savedTech);
+                showMainApp();
+            }
+        });
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const phone = document.getElementById('loginPhone').value;
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/tech/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentTech = data.tech;
+                    localStorage.setItem('tech', JSON.stringify(currentTech));
+                    showMainApp();
+                } else {
+                    errorDiv.textContent = data.message || 'Login failed';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = 'Login failed. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('tech');
+            currentTech = null;
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('mainApp').style.display = 'none';
+        }
+
+        function showMainApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('techName').textContent = currentTech.name;
+
+            // Set date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('jobDate').value = today;
+            document.getElementById('jobDate').addEventListener('change', loadJobs);
+
+            loadJobs();
+
+            // Auto-refresh every 30 seconds
+            setInterval(loadJobs, 30000);
+        }
+
+        async function loadJobs() {
+            const date = document.getElementById('jobDate').value;
+            const listDiv = document.getElementById('jobsList');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/tech/${currentTech.tech_id}/jobs?date=${date}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('jobCount').textContent = data.count;
+                    renderJobs(data.jobs);
+                } else {
+                    listDiv.innerHTML = '<div class="error">Failed to load jobs</div>';
+                }
+            } catch (error) {
+                console.error('Load jobs error:', error);
+                listDiv.innerHTML = '<div class="error">Failed to load jobs. Please check your connection.</div>';
+            }
+        }
+
+        function renderJobs(jobs) {
+            const container = document.getElementById('jobsList');
+
+            if (jobs.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No jobs scheduled</h3><p>Enjoy your day off!</p></div>';
+                return;
+            }
+
+            container.innerHTML = jobs.map(job => {
+                const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(job.address + ', ' + job.city + ', ' + job.state)}`;
+                const phoneUrl = `tel:${job.customer_phone}`;
+
+                return `
+                    <div class="job-card ${job.status}" id="job-${job.request_id}">
+                        <div class="job-header">
+                            <div>
+                                <div class="job-number">Job #${job.request_id}</div>
+                                <div class="job-time">${job.scheduled_time || 'Time TBD'}</div>
+                            </div>
+                        </div>
+
+                        <div class="customer-info">
+                            <div class="customer-name">${job.customer_name}</div>
+                            <div class="service-type">${job.service_name || 'Service Call'} ${job.base_price ? `- $${job.base_price}` : ''}</div>
+                            <div class="detail-row">
+                                📞 <a href="${phoneUrl}">${job.customer_phone}</a>
+                            </div>
+                            <div class="detail-row">
+                                📍 <a href="${mapUrl}" target="_blank">${job.address}, ${job.city}, ${job.state} ${job.zip}</a>
+                            </div>
+                            ${job.customer_email ? `<div class="detail-row">📧 ${job.customer_email}</div>` : ''}
+                        </div>
+
+                        ${job.issue_description ? `
+                            <div class="issue-box">
+                                <strong>Issue Description:</strong>
+                                ${job.issue_description}
+                            </div>
+                        ` : ''}
+
+                        ${job.equipment_type ? `
+                            <div class="equipment-info">
+                                🔧 <strong>Equipment:</strong> ${job.equipment_type} ${job.brand ? `(${job.brand})` : ''} 
+                                ${job.age_years ? `- ${job.age_years} years old` : ''}
+                            </div>
+                        ` : ''}
+
+                        ${job.notes ? `
+                            <div class="issue-box">
+                                <strong>Notes:</strong>
+                                ${job.notes}
+                            </div>
+                        ` : ''}
+
+                        ${job.special_instructions ? `
+                            <div class="issue-box">
+                                <strong>Special Instructions:</strong>
+                                ${job.special_instructions}
+                            </div>
+                        ` : ''}
+
+                        <div class="job-actions">
+                            ${job.status === 'scheduled' ? `
+                                <button class="btn btn-success" onclick="startJob(${job.request_id})">
+                                    ▶️ Start Job
+                                </button>
+                            ` : ''}
+                            
+                            ${job.status === 'in_progress' ? `
+                                <button class="btn btn-primary" onclick="toggleCompletion(${job.request_id})">
+                                    ✅ Complete Job
+                                </button>
+                            ` : ''}
+                            
+                            <button class="btn btn-secondary" onclick="toggleNotes(${job.request_id})">
+                                📝 Add Notes
+                            </button>
+                        </div>
+
+                        <div id="notes-${job.request_id}" class="notes-section" style="display: none;">
+                            <textarea id="notesText-${job.request_id}" placeholder="Add notes about this job..."></textarea>
+                            <button class="btn btn-primary" onclick="saveNotes(${job.request_id})">Save Notes</button>
+                        </div>
+
+                        <div id="completion-${job.request_id}" class="completion-form" style="display: none;">
+                            <h4>Complete Job</h4>
+                            <textarea id="workPerformed-${job.request_id}" placeholder="Work performed..."></textarea>
+                            <textarea id="partsUsed-${job.request_id}" placeholder="Parts used..."></textarea>
+                            <textarea id="techNotes-${job.request_id}" placeholder="Additional notes..."></textarea>
+                            <button class="btn btn-success" onclick="completeJob(${job.request_id})">✅ Mark Complete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function startJob(requestId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/tech/jobs/${requestId}/start`, {
+                    method: 'PUT'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    loadJobs();
+                } else {
+                    alert('Failed to start job: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Start job error:', error);
+                alert('Failed to start job');
+            }
+        }
+
+        function toggleCompletion(requestId) {
+            const form = document.getElementById(`completion-${requestId}`);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function completeJob(requestId) {
+            const workPerformed = document.getElementById(`workPerformed-${requestId}`).value;
+            const partsUsed = document.getElementById(`partsUsed-${requestId}`).value;
+            const techNotes = document.getElementById(`techNotes-${requestId}`).value;
+
+            if (!workPerformed) {
+                alert('Please describe the work performed');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/tech/jobs/${requestId}/complete`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        work_performed: workPerformed,
+                        parts_used: partsUsed,
+                        tech_notes: techNotes
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Job completed successfully!');
+                    loadJobs();
+                } else {
+                    alert('Failed to complete job: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Complete job error:', error);
+                alert('Failed to complete job');
+            }
+        }
+
+        function toggleNotes(requestId) {
+            const notesDiv = document.getElementById(`notes-${requestId}`);
+            notesDiv.style.display = notesDiv.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function saveNotes(requestId) {
+            const notes = document.getElementById(`notesText-${requestId}`).value;
+
+            if (!notes) {
+                alert('Please enter some notes');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/tech/jobs/${requestId}/notes`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notes })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Notes saved!');
+                    document.getElementById(`notesText-${requestId}`).value = '';
+                    toggleNotes(requestId);
+                    loadJobs();
+                } else {
+                    alert('Failed to save notes: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Save notes error:', error);
+                alert('Failed to save notes');
+            }
+        }
+    </script>
+</body>
+</html>
