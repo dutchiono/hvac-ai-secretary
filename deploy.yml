@@ -20,38 +20,45 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
+          envs: GMAIL_USER,GMAIL_APP_PASSWORD,NOTIFICATION_EMAIL,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_REDIRECT_URI
           script: |
             set -e
 
             APP_DIR="/var/www/hvac-ai-secretary"
-            REPO_URL="https://github.com/dutchiono/hvac-ai-secretary.git"
+            REPO_URL="https://github.com/iono-such-things/hvac-ai-secretary.git"
 
             echo "Starting deployment..."
 
             if [ -d "$APP_DIR/.git" ]; then
               echo "Pulling latest changes..."
               cd $APP_DIR
-              git pull origin main
+              git fetch origin main
+              git reset --hard origin/main
             else
               echo "Initial clone..."
               git clone $REPO_URL $APP_DIR
               cd $APP_DIR
             fi
 
+            cd $APP_DIR
+
+            echo "Fixing node_modules permissions..."
+            sudo chown -R $USER:$USER node_modules 2>/dev/null || true
+
             echo "Installing dependencies..."
             npm install --omit=dev
 
-            echo "Creating .env file with secrets..."
-            cat > .env << 'ENVEOF'
+            echo "Writing .env from secrets..."
+            cat > .env << EOF
 PORT=3145
 NODE_ENV=production
-GMAIL_USER=${{ secrets.GMAIL_USER }}
-GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}
-NOTIFICATION_EMAIL=${{ secrets.NOTIFICATION_EMAIL }}
-GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
-ENVEOF
+GMAIL_USER=${GMAIL_USER}
+GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+NOTIFICATION_EMAIL=${NOTIFICATION_EMAIL}
+GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+EOF
 
             echo "Ensuring data directory exists..."
             mkdir -p $APP_DIR/data
