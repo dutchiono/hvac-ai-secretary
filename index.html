@@ -3,15 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M. Jacob Company - Pittsburgh HVAC Services</title>
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- SEO Meta Tags -->
+    <title>M. Jacob Company - Pittsburgh HVAC Repair, Installation & Maintenance</title>
+    <meta name="description" content="Pittsburgh's trusted HVAC experts since 2024. Emergency furnace repair, AC installation, heating & cooling services. Family-owned. Call (412) XXX-XXXX for same-day service.">
+    <meta name="keywords" content="Pittsburgh HVAC, furnace repair Pittsburgh, AC installation Pittsburgh, heating repair, air conditioning service, emergency HVAC Pittsburgh, M. Jacob Company">
+    
+    <!-- Local Business Schema -->
+    <meta name="geo.region" content="US-PA">
+    <meta name="geo.placename" content="Pittsburgh">
+    
+    <!-- Open Graph for Social Sharing -->
+    <meta property="og:title" content="M. Jacob Company - Pittsburgh HVAC Services">
+    <meta property="og:description" content="Pittsburgh's trusted HVAC experts. Emergency repair, installation & maintenance. Family-owned since 2024.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mjacobcompany.com">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://mjacobcompany.com">
+    
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body>
     <!-- Navigation -->
     <nav class="nav">
         <div class="nav-container">
             <div class="nav-brand">
-                <img src="/images/mark-jacob-logo.png" alt="Mark Jacob HVAC Logo" class="nav-logo">
                 <div class="nav-brand-text">
                     <h1>M. Jacob Company</h1>
                     <span class="tagline">Family-owned HVAC since 2024</span>
@@ -46,7 +63,7 @@
                 <div class="hero-badges">
                     <span class="badge">24/7 Emergency</span>
                     <span class="badge">Licensed & Insured</span>
-                    <span class="badge">30+ Years Experience</span>
+                    <span class="badge">10+ Years Experience</span>
                 </div>
             </div>
         </div>
@@ -75,7 +92,7 @@
                     <h3>AC Installation</h3>
                     <p>New air conditioning system installations with professional sizing and setup for maximum efficiency.</p>
                     <ul class="service-features">
-                        <li>Free estimates</li>
+                        <li>Mitsubishi installations</li>
                         <li>Energy-efficient units</li>
                         <li>Professional installation</li>
                     </ul>
@@ -176,14 +193,14 @@
                 <div class="about-content">
                     <h2 class="section-title">Pittsburgh's Family HVAC Business</h2>
                     <p>M. Jacob Company has been serving the Pittsburgh area since 2024. We're a family-owned business that treats every customer like family.</p>
-                    <p>Our team of licensed technicians brings decades of experience to every job. We pride ourselves on honest assessments, fair pricing, and quality workmanship that lasts.</p>
+                    <p>Our team of licensed technicians brings 10+ years of experience to every job. We pride ourselves on honest assessments, fair pricing, and quality workmanship that lasts.</p>
                     <div class="about-stats">
                         <div class="stat">
-                            <div class="stat-number">30+</div>
+                            <div class="stat-number">10+</div>
                             <div class="stat-label">Years Experience</div>
                         </div>
                         <div class="stat">
-                            <div class="stat-number">10k+</div>
+                            <div class="stat-number">1k+</div>
                             <div class="stat-label">Happy Customers</div>
                         </div>
                         <div class="stat">
@@ -240,7 +257,7 @@
                     <a href="tel:4125120425" class="btn btn-secondary btn-large">Call: (412) 512-0425</a>
                 </div>
                 <div class="contact-info">
-                    <p>📧 info@mjacobcompany.com</p>
+                    <p>📧 mjacobco25@gmail.com</p>
                     <p>📍 4449 Marywood Dr, Monroeville, PA 15146</p>
                     <p>⏰ Mon-Fri: 7am-7pm | Weekends: 8am-5pm | 24/7 Emergency</p>
                 </div>
@@ -284,8 +301,8 @@
                         <label for="service">Service Type *</label>
                         <select id="service" name="service" required>
                             <option value="">Select a service...</option>
-                            <option value="Clean & Check">Clean & Check ($129)</option>
-                            <option value="Service Call">Service Call ($89)</option>
+                            <option value="Clean & Check">Clean & Check ($100)</option>
+                            <option value="Service Call">Service Call ($135)</option>
                             <option value="Installation">New Installation (Free Estimate)</option>
                             <option value="Emergency">Emergency Repair</option>
                             <option value="Other">Other</option>
@@ -318,6 +335,75 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="./script.js"></script>
+    
+    <!-- Structured Data for Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HVACBusiness",
+      "name": "M. Jacob Company",
+      "description": "Pittsburgh's trusted HVAC experts providing emergency repair, installation, and maintenance services.",
+      "url": "https://mjacobcompany.com",
+      "telephone": "+1-412-XXX-XXXX",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Pittsburgh",
+        "addressRegion": "PA",
+        "addressCountry": "US"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "40.4406",
+        "longitude": "-79.9959"
+      },
+      "areaServed": {
+        "@type": "GeoCircle",
+        "geoMidpoint": {
+          "@type": "GeoCoordinates",
+          "latitude": "40.4406",
+          "longitude": "-79.9959"
+        },
+        "geoRadius": "50000"
+      },
+      "openingHours": "Mo-Su 00:00-24:00",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "reviewCount": "1"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "HVAC Services",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Emergency Furnace Repair",
+              "description": "24/7 emergency furnace repair service in Pittsburgh"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "AC Installation",
+              "description": "Professional air conditioning installation and replacement"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "HVAC Maintenance",
+              "description": "Preventative maintenance plans for heating and cooling systems"
+            }
+          }
+        ]
+      }
+    }
+    </script>
 </body>
 </html>
