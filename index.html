@@ -209,36 +209,34 @@
                         </div>
                     </div>
                 </div>
-                <div class="about-features">
-                    <h3>Why Choose Us</h3>
-                    <div class="feature-list">
-                        <div class="feature">
-                            <span class="feature-icon">✓</span>
-                            <div>
-                                <h4>Licensed & Insured</h4>
-                                <p>Fully certified technicians and comprehensive insurance coverage</p>
-                            </div>
+                <div class="about-values">
+                    <h3>Why Choose Us?</h3>
+                    <div class="value-item">
+                        <div class="value-icon">✓</div>
+                        <div class="value-content">
+                            <h4>Licensed & Insured</h4>
+                            <p>Fully certified technicians, comprehensive insurance coverage</p>
                         </div>
-                        <div class="feature">
-                            <span class="feature-icon">✓</span>
-                            <div>
-                                <h4>Upfront Pricing</h4>
-                                <p>No surprises - you'll know the cost before we start work</p>
-                            </div>
+                    </div>
+                    <div class="value-item">
+                        <div class="value-icon">✓</div>
+                        <div class="value-content">
+                            <h4>Transparent Pricing</h4>
+                            <p>Upfront quotes, no hidden fees, no surprises</p>
                         </div>
-                        <div class="feature">
-                            <span class="feature-icon">✓</span>
-                            <div>
-                                <h4>Quality Guaranteed</h4>
-                                <p>1-year warranty on all repairs and installations</p>
-                            </div>
+                    </div>
+                    <div class="value-item">
+                        <div class="value-icon">✓</div>
+                        <div class="value-content">
+                            <h4>Quality Guarantee</h4>
+                            <p>1-year warranty on all repairs and installations</p>
                         </div>
-                        <div class="feature">
-                            <span class="feature-icon">✓</span>
-                            <div>
-                                <h4>Fast Response</h4>
-                                <p>Same-day service available for emergencies</p>
-                            </div>
+                    </div>
+                    <div class="value-item">
+                        <div class="value-icon">✓</div>
+                        <div class="value-content">
+                            <h4>Fast Response</h4>
+                            <p>Same-day service available for emergencies</p>
                         </div>
                     </div>
                 </div>
@@ -277,8 +275,8 @@
     <div id="bookingModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal()">&times;</button>
-            <h2>Schedule Your Service</h2>
-            <p class="modal-subtitle">Fill out the form below and we'll contact you to confirm your appointment.</p>
+            <h2>Schedule a Call</h2>
+            <p class="modal-subtitle">Pick a day and a 2-hour window and we'll call you to discuss your HVAC needs. Monday–Friday only.</p>
             
             <form id="bookingForm" onsubmit="handleSubmit(event)">
                 <div class="form-grid">
@@ -293,43 +291,49 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="service">Service Type *</label>
-                        <select id="service" name="service" required>
-                            <option value="">Select a service...</option>
+                        <label for="topic">What do you need help with? *</label>
+                        <select id="topic" name="topic" required>
+                            <option value="">Select a topic...</option>
                             <option value="Clean & Check">Clean & Check ($100)</option>
-                            <option value="Service Call">Service Call ($135)</option>
+                            <option value="Service Call">Service Call / Repair ($135)</option>
                             <option value="Installation">New Installation (Free Estimate)</option>
                             <option value="Emergency">Emergency Repair</option>
-                            <option value="Other">Other</option>
+                            <option value="General Question">General Question</option>
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="address">Service Address *</label>
-                    <input type="text" id="address" name="address" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="date">Preferred Date *</label>
+                    <label for="date">Preferred Date * <span style="font-weight:normal;font-size:0.85em;">(Monday–Friday only)</span></label>
                     <input type="date" id="date" name="date" required>
                 </div>
+
+                <div class="form-group">
+                    <label for="window">Call Window * <span style="font-weight:normal;font-size:0.85em;">(We'll call you within this 2-hour window)</span></label>
+                    <select id="window" name="window" required>
+                        <option value="">Select a window...</option>
+                        <option value="8:00-10:00">8:00 AM – 10:00 AM</option>
+                        <option value="10:00-12:00">10:00 AM – 12:00 PM</option>
+                        <option value="12:00-14:00">12:00 PM – 2:00 PM</option>
+                        <option value="13:00-15:00">1:00 PM – 3:00 PM</option>
+                    </select>
+                </div>
                 
                 <div class="form-group">
-                    <label for="notes">Additional Details</label>
-                    <textarea id="notes" name="notes" rows="3" placeholder="Tell us about your HVAC issue or service needs..."></textarea>
+                    <label for="notes">Anything else we should know?</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="Briefly describe your issue or question..."></textarea>
                 </div>
                 
                 <div class="form-message" id="formMessage"></div>
                 
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                    <button type="submit" class="btn btn-primary">Request Call</button>
                 </div>
             </form>
         </div>
